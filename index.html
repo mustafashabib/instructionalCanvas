@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Panel 10</title>
+  <style>
+  canvas {
+    margin: auto;
+    width: 50%;
+    display: block;
+    padding: 10px;
+  }
+  </style>
+</head>
+<body>
+<canvas id="canvas" width="4000" height="4000"></canvas>
+
+<script>
+var MAX_WIDTH = 4000;
+var MAX_HEIGHT = 4000;
+var NUMBER_OF_LINES = 10000;
+var ROTATION_COLOR = ['#000000', '#FF0000', '#0000FF', '#FFFF00']; //Black, Red, Blue, Yellow
+
+var canvas = document.getElementById("canvas");
+var context = canvas.getContext("2d");
+
+function getRandomValue(max) {
+    return Math.floor(Math.random() * max) + 1;
+}
+function getRandomPoint(maxX, maxY) {
+  return { x: getRandomValue(maxX), y: getRandomValue(maxY) };
+}
+
+function draw() {
+  randomLines = []
+  for(var i = 0; i < NUMBER_OF_LINES; i++) {
+    randomLine = { startPoint: getRandomPoint(MAX_WIDTH, MAX_HEIGHT), endPoint: getRandomPoint(MAX_WIDTH, MAX_HEIGHT), lineWidth: getRandomValue(10), alphaPercent: getRandomValue(10) };
+    randomLines.push(randomLine);
+  }
+
+  for(var rotation = 0; rotation < 4; rotation++) {
+    //reset context transform to ident
+    context.setTransform(1, 0, 0, 1, 0, 0);
+    // translate context to center of canvas
+    context.translate(canvas.width / 2, canvas.height / 2);
+    //rotate by 90 from previous rotation
+    context.rotate((-90 * rotation) * Math.PI / 180);
+    // Move registration point back to the top left corner of canvas
+    context.translate(-canvas.width/2, -canvas.height/2);
+    context.strokeStyle = ROTATION_COLOR[rotation];
+
+  for ( var currentLineNumber = 0; currentLineNumber < NUMBER_OF_LINES; currentLineNumber++) {
+
+
+      currentLine = randomLines[currentLineNumber];
+
+      startPoint = currentLine.startPoint;
+      endPoint = currentLine.endPoint;
+
+      context.lineWidth = currentLine.lineWidth;
+      context.globalAlpha = .2;//currentLine.alphaPercent/10.0;
+
+      context.beginPath();
+      context.moveTo(startPoint.x, startPoint.y);
+      context.lineTo(endPoint.x,endPoint.y);
+      context.stroke();
+
+    }
+  }
+}
+
+window.onload = draw;
+
+</script>
+</body>
+</html>

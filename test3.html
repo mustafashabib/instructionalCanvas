@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Panel 2</title>
+  <style>
+  div#content {
+    margin: auto;
+    width: 50%;
+    display: block;
+    padding: 10px;
+  }
+
+  div#content h1 {
+    font-size: 1.5em;
+  }
+  canvas {
+    margin: auto;
+    width: 50%;
+    display: block;
+    padding: 10px;
+  }
+  </style>
+</head>
+<body>
+  <div id="content">
+    <h1>Panel 3</h1>
+    <p>
+      WORK FROM INSTRUCTIONS (Original, 2015):
+      USING A BLACK LINE, DRAW A SQUARE.
+      DIVIDE THIS SQUARE INTO A GRID OF 20X20 SQUARES.
+      WITHIN EACH ONE INCH SQUARE COLOR IT WHITE,
+      BLUE, RED, OR YELLOW.
+    </p>
+  </div>
+<canvas id="canvas" width="2000" height="2000"></canvas>
+
+<script>
+var WIDTH = 2000;
+var HEIGHT = 2000;
+var SQUARE_SIZE = WIDTH/10;
+var canvas = document.getElementById("canvas");
+var context = canvas.getContext("2d");
+var COLORS = ['#FFFFFF','#00FF00', '#0000FF', '#FF0000', '#FF00FF','#00FFFF', '#FFFF00'];
+
+function getRandomValue(start, end) {
+  return Math.floor(Math.random() * end) + start;
+}
+
+function getColor() {
+  var randIndex = getRandomValue(0,COLORS.length);
+  return COLORS[randIndex];
+}
+
+function getRandomColor() {
+  var r = getRandomValue(0,256);
+  var g = getRandomValue(0,256);
+  var b = getRandomValue(0,256);
+  return "rgb(" + r + "," + g + "," + b + ")";
+}
+
+function resetContext() {
+  context.lineWidth = 1;
+  context.globalAlpha = 1;
+  context.strokeStyle = "#000000";
+  context.setTransform(1, 0, 0, 1, 0, 0);
+}
+
+function draw() {
+  resetContext();
+  for(var i = 0; i < WIDTH; i += SQUARE_SIZE) {
+    for(var j = 0; j < HEIGHT; j += SQUARE_SIZE) {
+      context.fillStyle = getColor(); //getColor();
+      context.fillRect(i,j,SQUARE_SIZE,SQUARE_SIZE);
+      context.strokeStyle = "#000000"; //black lines
+      context.rect(i,j,SQUARE_SIZE,SQUARE_SIZE);
+    }
+  }
+  context.stroke();
+}
+
+window.onload = draw;
+
+</script>
+</body>
+</html>

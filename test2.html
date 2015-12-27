@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Panel 2</title>
+  <style>
+  div#content {
+    margin: auto;
+    width: 50%;
+    display: block;
+    padding: 10px;
+  }
+
+  div#content h1 {
+    font-size: 1.5em;
+  }
+  canvas {
+    margin: auto;
+    width: 50%;
+    display: block;
+    padding: 10px;
+  }
+  </style>
+</head>
+<body>
+  <div id="content">
+    <h1>Panel 2</h1>
+    <p>
+      WORK FROM INSTRUCTIONS (1971):
+      USING A BLACK, HARD CRAYON DRAW A TWENTY INCH SQUARE.
+      DIVIDE THIS SQUARE INTO ONE INCH SQUARES. WITHIN EACH
+      ONE INCH SQUARE, DRAW NOTHING, OR DRAW A DIAGONAL
+      STRAIGHT LINE FROM CORNER TO CORNER OR TWO CROSSING
+      STRAIGHT LINES DIAGONALLY FROM CORNER TO CORNER.
+    </p>
+  </div>
+<canvas id="canvas" width="2000" height="2000"></canvas>
+
+<script>
+var WIDTH = 2000;
+var HEIGHT = 2000;
+var SQUARE_SIZE = WIDTH/20;
+var TYPE_START = 0;
+var DRAW_TYPE_NONE = 0;
+var DRAW_TYPE_SINGLE = 1;
+var DRAW_TYPE_SINGLE_TOP_LEFT_TO_BOTTOM_RIGHT = 0;
+var DRAW_TYPE_SINGLE_TOP_RIGHT_TO_BOTTOM_LEFT = 1;
+var DRAW_TYPE_DOUBLE = 2;
+var DRAW_TYPE_END = 3;
+var DRAW_TYPE_SINGLE_END = 2;
+
+
+var canvas = document.getElementById("canvas");
+var context = canvas.getContext("2d");
+
+function drawLine(startPoint, endPoint, lineWidth, lineAlpha, strokeStyle) {
+
+  context.lineWidth = lineWidth || 1;
+  context.globalAlpha = lineAlpha || 1;
+  context.strokeStyle = strokeStyle || "#000000";
+
+  context.beginPath();
+  context.moveTo(startPoint.x, startPoint.y);
+  context.lineTo(endPoint.x,endPoint.y);
+  context.stroke();
+}
+
+function makePoint(x, y) {
+  return {x: x, y: y};
+}
+
+/* gets a random value between inclusive start and exclusive end */
+function getRandomValue(start, end) {
+  return Math.floor(Math.random() * end) + start;
+}
+function drawLinesInSquare(topLeftX, topLeftY, size) {
+  drawType = getRandomValue(TYPE_START,DRAW_TYPE_END);
+  switch(drawType) {
+    case DRAW_TYPE_SINGLE:
+      console.log('drawing single line');
+      drawTypeSingle = getRandomValue(TYPE_START,DRAW_TYPE_SINGLE_END);
+      switch(drawTypeSingle) {
+        case DRAW_TYPE_SINGLE_TOP_LEFT_TO_BOTTOM_RIGHT:
+          startPoint = makePoint(topLeftX, topLeftY);
+          endPoint = makePoint(topLeftX + size, topLeftY + size);
+          drawLine(startPoint, endPoint, 2, 1, "#000000");
+          console.log('\ttop left to bottom right');
+          break;
+        case DRAW_TYPE_SINGLE_TOP_RIGHT_TO_BOTTOM_LEFT:
+          console.log('\ttop right to bottom left');
+          startPoint = makePoint(topLeftX + size, topLeftY);
+          endPoint = makePoint(topLeftX, topLeftY + size);
+          drawLine(startPoint, endPoint, 2, 1, "#000000");
+          break;
+        default:
+          console.error('\tUNKNOWN SINGLE LINE TYPE');
+          break;
+      }
+      break;
+    case DRAW_TYPE_DOUBLE:
+      console.log('drawing double line');
+      startPoint = makePoint(topLeftX, topLeftY);
+      endPoint = makePoint(topLeftX + size, topLeftY + size);
+      drawLine(startPoint, endPoint, 2, 1, "#000000");
+      startPoint2 = makePoint(topLeftX + size, topLeftY);
+      endPoint2 = makePoint(topLeftX, topLeftY + size);
+      drawLine(startPoint2, endPoint2, 2, 1, "#000000");
+      break;
+    case DRAW_TYPE_NONE:
+      console.log('drawing no line');
+    default:
+      console.error('UNKNOWN DRAW TYPE');
+      break;
+  }
+}
+
+function resetContext() {
+  context.lineWidth = 1;
+  context.globalAlpha = 1;
+  context.strokeStyle = "#000000";
+  context.setTransform(1, 0, 0, 1, 0, 0);
+}
+
+function draw() {
+  resetContext();
+  for(var i = 0; i < WIDTH; i += SQUARE_SIZE) {
+    for(var j = 0; j < HEIGHT; j += SQUARE_SIZE) {
+      context.rect(i,j,SQUARE_SIZE,SQUARE_SIZE);
+      context.stroke();
+      drawLinesInSquare(i, j, SQUARE_SIZE);
+    }
+  }
+}
+
+window.onload = draw;
+
+</script>
+</body>
+</html>

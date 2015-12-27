@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Panel 2</title>
+  <style>
+  div#content {
+    margin: auto;
+    width: 50%;
+    display: block;
+    padding: 10px;
+  }
+
+  div#content h1 {
+    font-size: 1.5em;
+  }
+  canvas {
+    margin: auto;
+    width: 50%;
+    display: block;
+    padding: 10px;
+  }
+  </style>
+</head>
+<body>
+  <div id="content">
+    <h1>Panel 4</h1>
+    <p>
+      WORK FROM INSTRUCTIONS (Original, 2015):
+      USING A BLACK LINE, DRAW A SQUARE.
+      DIVIDE THIS SQUARE INTO A GRID OF 20X20 SQUARES.
+      PICK A RANDOM SQUARE AND COLOR IT RED, BLUE, YELLOW, OR WHITE.
+      FOR EACH OF ITS EIGHT NEIGHBORS, COLOR THEM ANY OF THE
+      THREE OTHER COLORS. FOR EACH OF THOSE NEIGHBORS, UNTIL YOU MEET THE EDGE OF THE GRID, MAKE IT THE NEW "CENTER" AND COLOR ITS EIGHT UNVISITED NEIGHBORS ONE OF THE THREE REMAINING COLORS.
+    </p>
+  </div>
+<canvas id="canvas" width="6000" height="6000"></canvas>
+
+<script>
+var WIDTH = 6000;
+var HEIGHT = 6000;
+var SQUARE_SIZE = WIDTH/40;
+var canvas = document.getElementById("canvas");
+var context = canvas.getContext("2d");
+var COLORS = ['#FFFFFF','#0000FF', '#FF0000', '#FFFF00'];
+var OUTLINE_COLOR = '#000000';
+var BACKGROUND_COLOR = '#FFFFFF';
+//var COLORS = ['#00CC00','#003300', '#006600', '#009900'];
+
+function getRandomValue(start, end) {
+  return Math.floor(Math.random() * end) + start;
+}
+
+function getColor() {
+  var randIndex = getRandomValue(0,COLORS.length);
+  return COLORS[randIndex];
+}
+
+function getRandomColor() {
+  var r = getRandomValue(0,256);
+  var g = getRandomValue(0,256);
+  var b = getRandomValue(0,256);
+  return "rgb(" + r + "," + g + "," + b + ")";
+}
+
+function resetContext() {
+  context.lineWidth = 1;
+  context.globalAlpha = 1;
+  context.strokeStyle = "#000000";
+  context.setTransform(1, 0, 0, 1, 0, 0);
+}
+
+function getObjectInArraySafe(array, index) {
+  if (typeof array[index] === 'undefined') {
+    return null;
+  } else {
+    return array[index];
+  }
+}
+
+function getSquaresUnvisitedNeighbors(currentSquare, squares, visited) {
+  var neighbors = [];
+  var square_counter = HEIGHT/SQUARE_SIZE;
+  var index = currentSquare.index;
+  var top = getObjectInArraySafe(squares, index - 1);
+  var topLeft = getObjectInArraySafe(squares, index - 1 - square_counter);
+  var left = getObjectInArraySafe(squares, index - square_counter);
+  var bottomLeft = getObjectInArraySafe(squares, index - square_counter + 1);
+  var bottom = getObjectInArraySafe(squares, index+1);
+  var bottomRight = getObjectInArraySafe(squares, index + square_counter + 1);
+  var right = getObjectInArraySafe(squares, index + square_counter);
+  var topRight = getObjectInArraySafe(squares, index + square_counter - 1);
+
+  if(top && !visited[top.index]) neighbors.push(top);
+  if(topLeft && !visited[topLeft.index]) neighbors.push(topLeft);
+  if(left && !visited[left.index]) neighbors.push(left);
+  if(bottomLeft && !visited[bottomLeft.index]) neighbors.push(bottomLeft);
+  if(bottom && !visited[bottom.index]) neighbors.push(bottom);
+  if(bottomRight && !visited[bottomRight.index]) neighbors.push(bottomRight);
+  if(right && !visited[right.index]) neighbors.push(right);
+  if(topRight && !visited[topRight.index]) neighbors.push(topRight);
+  return neighbors;
+}
+
+function fillSquare(square, color) {
+  context.fillStyle = color;
+  context.fillRect(square.topX, square.topY,SQUARE_SIZE,SQUARE_SIZE);
+  context.strokeStyle = "#000000";
+  context.lineWidth   = 1;
+  context.strokeRect(square.topX, square.topY,SQUARE_SIZE,SQUARE_SIZE);
+  context.stroke();
+}
+
+function drawEmptySquare(square) {
+  context.strokeStyle = "#000000";
+  context.lineWidth = 1;
+  context.strokeRect(square.topX, square.topY,SQUARE_SIZE,SQUARE_SIZE);
+}
+
+function draw() {
+  squares = []
+  /* draw the grid in black*/
+  visited = {};
+  resetContext();
+  var index = 0;
+  //create grid
+  for(var i = 0; i < WIDTH; i += SQUARE_SIZE) {
+    for(var j = 0; j < HEIGHT; j += SQUARE_SIZE) {
+      squares.push({index: index, topX: i, topY: j, size: SQUARE_SIZE});
+      index++;
+    }
+  }
+
+  currentSquare = squares[getRandomValue(0, squares.length)];
+  currentColor = getColor();
+  visited[currentSquare.index] = {'color': currentColor };
+  fillSquare(currentSquare, currentColor);
+  console.log('picked random square', currentSquare, 'and marked visited', visited);
+  while(Object.keys(visited).length != squares.length) {
+    neighbors = getSquaresUnvisitedNeighbors(currentSquare, squares, visited);
+    if (neighbors.length == 0) {
+      break;
+    }
+    console.log('got neighbors for currentSquare', currentSquare, neighbors);
+    for(var n = 0; n < neighbors.length; n++) {
+      //get a new color that's not the same as the current squares color
+      newColor = getColor();
+      while (newColor == currentColor) {
+        newColor = getColor();
+      }
+
+      fillSquare(neighbors[n], newColor);
+      visited[neighbors[n].index] = {'color': newColor }; //mark visited
+      console.log('marked neighbor as visited', neighbors[n], visited);
+    }
+
+    //get a random neighbor
+    randomNeighbor = getRandomValue(0, neighbors.length);
+    currentSquare = neighbors[randomNeighbor];
+    currentColor = visited[currentSquare.index].color;
+  }
+
+  var index = 0;
+  for(var i = 0; i < WIDTH; i += SQUARE_SIZE) {
+    for(var j = 0; j < HEIGHT; j += SQUARE_SIZE) {
+      if (typeof visited[index] === 'undefined') {
+        context.fillStyle = BACKGROUND_COLOR;
+        context.fillRect(i, j,SQUARE_SIZE,SQUARE_SIZE);
+      }
+      context.stroke();
+      context.strokeStyle = OUTLINE_COLOR;
+      context.lineWidth   = 1;
+      context.strokeRect(i, j,SQUARE_SIZE,SQUARE_SIZE);
+      index++;
+    }
+  }
+}
+
+window.onload = draw;
+
+</script>
+</body>
+</html>
